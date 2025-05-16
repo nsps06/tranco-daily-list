@@ -22,7 +22,7 @@ jobs:
       run: pip install requests
 
     - name: Run update script
-      run: python tranco-daily-list/update_tranco.py
+      run: python update_tranco.py
 
     - name: Commit and Push
       run: |
