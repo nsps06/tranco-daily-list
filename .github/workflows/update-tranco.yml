@@ -22,17 +22,36 @@ jobs:
       run: |
         pip install requests
         python <<EOF
-        import requests, zipfile, io
+import requests, zipfile, io, sys
 
-        url = "https://tranco-list.eu/top-1m.csv.zip"
-        r = requests.get(url)
-        z = zipfile.ZipFile(io.BytesIO(r.content))
-        csv_filename = z.namelist()[0]
-        content = z.read(csv_filename).decode()
+try:
+    url = "https://tranco-list.eu/top-1m.csv.zip"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; GitHub Actions Workflow)",
+        "Accept": "application/zip"
+    }
+    print(f"Downloading from {url} ...")
+    r = requests.get(url, headers=headers)
+    print("Response status:", r.status_code)
+    print("Content-Type:", r.headers.get("Content-Type"))
+    r.raise_for_status()
 
-        with open("top-1m.csv", "w", encoding="utf-8") as f:
-            f.write(content)
-        EOF
+    # Check if content looks like a zip file by signature (optional sanity check)
+    if not r.content.startswith(b'PK'):
+        print("Error: downloaded file does not start with 'PK' signature for ZIP files")
+        sys.exit(1)
+
+    z = zipfile.ZipFile(io.BytesIO(r.content))
+    csv_filename = z.namelist()[0]
+    content = z.read(csv_filename).decode()
+
+    with open("top-1m.csv", "w", encoding="utf-8") as f:
+        f.write(content)
+    print("File written successfully.")
+except Exception as e:
+    print("Error:", e)
+    sys.exit(1)
+EOF
 
     - name: Commit and Push
       run: |
