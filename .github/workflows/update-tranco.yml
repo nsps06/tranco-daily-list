@@ -36,7 +36,6 @@ try:
     print("Content-Type:", r.headers.get("Content-Type"))
     r.raise_for_status()
 
-    # Check if content looks like a zip file by signature (optional sanity check)
     if not r.content.startswith(b'PK'):
         print("Error: downloaded file does not start with 'PK' signature for ZIP files")
         sys.exit(1)
